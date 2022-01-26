@@ -83,7 +83,7 @@ async function handleMessage(sender_psid, received_message) {
     //Check if the message contains text
     if (user != "undefined") {
 
-        addUrl(`https://node-red-yrbsr-2021-11-03.mybluemix.net/instagram?mensage=${received_message.text}&usuario=${user}&session=${sender_psid}&origem=${chanel}`)
+        addUrl(`url/instagram?mensage=${received_message.text}&usuario=${user}&session=${sender_psid}&origem=${chanel}`)
             .then(res => res.json()).then(json => {
                 console.log(json)
                 json.forEach((item, index) => {
