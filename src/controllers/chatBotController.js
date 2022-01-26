@@ -4,6 +4,9 @@ const request = require("request");
 const chanel = "instagram";
 const MY_FB_PAGE_TOKEN = "";
 const MY_VERIFY_TOKEN = "";
+
+//Verificar Webhook
+
 let getWebhook = (req, res) => {
     // Your verify token. Should be a random string.
     let VERIFY_TOKEN = MY_FB_PAGE_TOKEN;
@@ -29,32 +32,29 @@ let getWebhook = (req, res) => {
         }
     }
 };
+
+//Verificar Menssagem
+
 let postWebhook = (req, res) => {
-    // Parse the request body from the POST
     let body = req.body;
-    // Check the webhook event is from a Page subscription
     if(body.object === 'instagram') {
-        // Iterate over each entry - there may be multiple if batched
         body.entry.forEach(function (entry) {
-            // Gets the body of the webhook event
             let webhook_event = entry.messaging[0];
-            // Get the sender PSID
             let sender_psid = webhook_event.sender.id;
-            // Check if the event is a message or postback and
-            // pass the event to the appropriate handler function
             if (webhook_event.message) {
                 handleMessage(sender_psid, webhook_event.message);
             }
         });
-        // Return a '200 OK' response to all events
         res.status(200).send('EVENT_RECEIVED');
         
     }
      else {
-        // Return a '404 Not Found' if event is not from a page subscription
         res.sendStatus(404);
     }
 };
+
+//Obter nome usuário IG
+
 let getIGusername = (sender_psid) => {
     return new Promise((resolve, reject) => {
         let uri = `https://graph.facebook.com/${sender_psid}?IGUser&access_token=${MY_FB_PAGE_TOKEN}`;
@@ -75,12 +75,13 @@ let getIGusername = (sender_psid) => {
         });
     });
 };
+
+//Tratamento de mensagens
+
 async function handleMessage(sender_psid, received_message) {
 
     var user = await getIGusername(sender_psid);
-
-
-    //Check if the message contains text
+    
     if (user != "undefined") {
 
         addUrl(`url/instagram?mensage=${received_message.text}&usuario=${user}&session=${sender_psid}&origem=${chanel}`)
@@ -131,16 +132,16 @@ async function handleMessage(sender_psid, received_message) {
             })
     }
 }
+
+//Concatenar com cabeçalho
+
 async function callSendAPI(sender_psid, response) {
-    // Construct the message body
     let request_body = {
         "recipient": {
             "id": sender_psid
         },
         "message": response
     }
-
-    // Send the HTTP request to the Messenger Platform
     request({
         "uri": "https://graph.facebook.com/v12.0/me/messages",
         "qs": { "access_token": MY_FB_PAGE_TOKEN },
@@ -154,6 +155,8 @@ async function callSendAPI(sender_psid, response) {
         }
     });
 }
+
+//exportar arquivo
 module.exports = {
     postWebhook: postWebhook,
     getWebhook: getWebhook
